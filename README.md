@@ -2,6 +2,7 @@
 
 Streamlit을 사용하여 제작한 멀티페이지 데이터 분석 웹 서비스입니다. 
 청소년의 생활 패턴과 정신 건강 데이터 간의 관계를 분석하고 머신러닝을 통해 예측합니다.
+https://seoulai2026201-n2z3gcpmjzkxbjsdzjpw9g.streamlit.app/
 
 ## 📂 파일 구조
 - `main.py` : 웹사이트 메인 홈 화면
