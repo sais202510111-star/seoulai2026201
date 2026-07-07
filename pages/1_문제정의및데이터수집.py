@@ -1,3 +1,20 @@
+"""
+청소년 정신건강 AI 프로젝트
+문제 정의, 데이터 수집, 분류 모델 선정 논리
+
+Required packages:
+- streamlit==1.28.1
+- pandas==2.0.3
+- numpy==1.24.3
+- plotly==5.17.0
+
+Installation:
+    pip install streamlit==1.28.1 pandas==2.0.3 numpy==1.24.3 plotly==5.17.0
+
+Run:
+    streamlit run app.py
+"""
+
 import streamlit as st
 import pandas as pd
 
@@ -864,5 +881,10 @@ st.markdown("""
 <div class="footer">
 🧠 청소년 정신건강 AI 프로젝트 | 2024<br>
 <span style="font-size: 12px; margin-top: 15px; display: block;">문제 정의 • 데이터 수집 • 모델 선정 • 기대효과</span>
+<span style="font-size: 11px; margin-top: 10px; display: block; color: #ccc;">
+<strong>필수 라이브러리:</strong> streamlit==1.28.1, pandas==2.0.3, numpy==1.24.3, plotly==5.17.0<br>
+<strong>설치:</strong> pip install -r requirements.txt<br>
+<strong>실행:</strong> streamlit run app.py
+</span>
 </div>
 """, unsafe_allow_html=True)
