@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import time
 
 st.set_page_config(
     page_title="청소년 정신건강 AI 프로젝트",
@@ -15,213 +16,422 @@ st.markdown("""
         padding: 0;
     }
     
+    /* 배경 */
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    /* 메인 헤더 - 애니메이션 추가 */
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 50px 40px;
-        border-radius: 0;
+        padding: 80px 40px;
+        border-radius: 20px;
         color: white;
         text-align: center;
-        margin-bottom: 40px;
+        margin-bottom: 60px;
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .main-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+        pointer-events: none;
     }
     
     .main-header h1 {
-        font-size: 42px;
-        margin-bottom: 10px;
-        font-weight: bold;
+        font-size: 52px;
+        margin-bottom: 15px;
+        font-weight: 900;
+        position: relative;
+        z-index: 1;
+        animation: fadeInDown 1s ease-out;
     }
     
     .main-header p {
-        font-size: 18px;
+        font-size: 22px;
         opacity: 0.95;
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp 1s ease-out 0.2s backwards;
     }
     
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* 그리드 컨테이너 */
     .grid-container {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        margin-bottom: 50px;
+        gap: 25px;
+        margin-bottom: 80px;
     }
     
     .grid-item {
         background: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border-top: 4px solid;
+        padding: 35px 25px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        border-top: 5px solid;
         text-align: center;
-        transition: transform 0.3s;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .grid-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, transparent 100%);
+        border-radius: 16px;
+        opacity: 0;
+        transition: opacity 0.4s;
     }
     
     .grid-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    .grid-item:hover::before {
+        opacity: 1;
     }
     
     .grid-item h3 {
         font-size: 16px;
         margin-bottom: 12px;
         color: #333;
+        font-weight: 600;
     }
     
     .grid-item-number {
-        font-size: 36px;
-        font-weight: bold;
-        margin-bottom: 8px;
+        font-size: 48px;
+        font-weight: 900;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, var(--color1), var(--color2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     
     .grid-item-unit {
         font-size: 13px;
-        color: #666;
+        color: #888;
+        font-weight: 500;
     }
     
-    .item1 { border-top-color: #667eea; }
-    .item1 .grid-item-number { color: #667eea; }
+    .item1 { 
+        border-top-color: #667eea;
+        --color1: #667eea;
+        --color2: #764ba2;
+    }
     
-    .item2 { border-top-color: #f093fb; }
-    .item2 .grid-item-number { color: #f093fb; }
+    .item2 { 
+        border-top-color: #f093fb;
+        --color1: #f093fb;
+        --color2: #f5576c;
+    }
     
-    .item3 { border-top-color: #4facfe; }
-    .item3 .grid-item-number { color: #4facfe; }
+    .item3 { 
+        border-top-color: #4facfe;
+        --color1: #4facfe;
+        --color2: #00f2fe;
+    }
     
-    .item4 { border-top-color: #43e97b; }
-    .item4 .grid-item-number { color: #43e97b; }
+    .item4 { 
+        border-top-color: #43e97b;
+        --color1: #43e97b;
+        --color2: #38f9d7;
+    }
     
+    /* 섹션 */
     .section {
-        margin-bottom: 50px;
+        margin-bottom: 70px;
     }
     
     .section-title {
-        font-size: 28px;
-        font-weight: bold;
-        margin-bottom: 25px;
+        font-size: 36px;
+        font-weight: 900;
+        margin-bottom: 35px;
         color: #333;
-        padding-bottom: 12px;
-        border-bottom: 3px solid #667eea;
+        padding-bottom: 20px;
+        border-bottom: 4px solid;
+        border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+        position: relative;
     }
     
+    .section-title::before {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 2px;
+    }
+    
+    /* 정보 카드 */
     .info-card {
         background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 30px;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        position: relative;
+        border-left: 5px solid #667eea;
+    }
+    
+    .info-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.12);
     }
     
     .info-card h4 {
-        font-size: 16px;
-        margin-bottom: 12px;
+        font-size: 18px;
+        margin-bottom: 15px;
         color: #333;
+        font-weight: 700;
     }
     
     .info-card p {
-        color: #555;
-        line-height: 1.6;
+        color: #666;
+        line-height: 1.8;
         font-size: 14px;
+        font-weight: 500;
     }
     
+    /* 강조 박스 */
     .highlight-box {
-        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-        padding: 18px;
-        border-left: 4px solid #667eea;
-        border-radius: 8px;
-        margin: 20px 0;
-        font-size: 14px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.1) 100%);
+        padding: 25px;
+        border-left: 5px solid #667eea;
+        border-radius: 12px;
+        margin: 30px 0;
+        font-size: 15px;
         color: #333;
-        line-height: 1.6;
+        line-height: 1.8;
+        font-weight: 500;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
     }
     
+    /* 플로우 스텝 */
     .flow-step {
         display: flex;
         align-items: flex-start;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
+        animation: slideInLeft 0.6s ease-out;
     }
     
     .flow-number {
-        width: 45px;
-        height: 45px;
-        background: #667eea;
+        width: 55px;
+        height: 55px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 18px;
-        margin-right: 15px;
+        font-size: 22px;
+        margin-right: 20px;
         flex-shrink: 0;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
     }
     
     .flow-content {
         background: white;
-        padding: 12px 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        padding: 18px 22px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         flex-grow: 1;
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .flow-content:hover {
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        transform: translateX(3px);
     }
     
     .flow-content strong {
         color: #333;
         display: block;
-        margin-bottom: 4px;
-        font-size: 14px;
+        margin-bottom: 6px;
+        font-size: 15px;
     }
     
     .flow-content p {
         color: #666;
         font-size: 13px;
         margin: 0;
+        line-height: 1.6;
     }
     
+    /* 메트릭 카드 */
     .metric-card {
         background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 30px;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         text-align: center;
+        transition: all 0.4s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.4s;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 45px rgba(0,0,0,0.15);
+    }
+    
+    .metric-card:hover::before {
+        opacity: 1;
     }
     
     .metric-value {
-        font-size: 32px;
-        font-weight: bold;
+        font-size: 42px;
+        font-weight: 900;
         color: #667eea;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
     }
     
     .metric-label {
         font-size: 13px;
-        color: #666;
+        color: #888;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
     }
     
-    .footer {
-        text-align: center;
-        padding: 20px;
-        color: #999;
-        border-top: 1px solid #e0e0e0;
-        margin-top: 50px;
-        font-size: 13px;
-    }
-
+    /* 테이블 */
     .simple-table {
         width: 100%;
         border-collapse: collapse;
-        margin: 15px 0;
+        margin: 25px 0;
         font-size: 13px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     }
-
+    
     .simple-table th {
-        background: #667eea;
+        background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
-        padding: 12px;
+        padding: 16px;
         text-align: left;
-        font-weight: bold;
+        font-weight: 700;
     }
-
+    
     .simple-table td {
-        padding: 12px;
-        border-bottom: 1px solid #e0e0e0;
+        padding: 14px 16px;
+        border-bottom: 1px solid #f0f0f0;
     }
-
+    
     .simple-table tr:hover {
-        background: #f9f9f9;
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.05), transparent);
+    }
+    
+    .simple-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    /* 푸터 */
+    .footer {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        border-top: 2px solid #e0e0e0;
+        margin-top: 80px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    /* 스크롤 트리거 애니메이션 */
+    .fade-in {
+        opacity: 0;
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    @keyframes fadeIn {
+        to {
+            opacity: 1;
+        }
+    }
+    
+    /* 서브헤더 */
+    .stSubheader {
+        font-size: 22px;
+        font-weight: 800 !important;
+        color: #333 !important;
+        margin-top: 30px !important;
+        margin-bottom: 20px !important;
+    }
+    
+    /* 반응형 */
+    @media (max-width: 768px) {
+        .grid-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .roadmap_cols {
+            grid-template-columns: 1fr;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
@@ -229,7 +439,7 @@ st.markdown("""
 # 메인 헤더
 st.markdown("""
 <div class="main-header">
-    <h1>우울해하는 학생들을 미리 찾아내는 AI</h1>
+    <h1>🧠 우울해하는 학생들을 미리 찾아내는 AI</h1>
     <p>데이터로 정신건강 문제를 조기에 발견하는 시스템</p>
 </div>
 """, unsafe_allow_html=True)
@@ -238,22 +448,22 @@ st.markdown("""
 st.markdown("""
 <div class="grid-container">
     <div class="grid-item item1">
-        <h3>학생 수</h3>
+        <h3>📊 학생 수</h3>
         <div class="grid-item-number">1,000</div>
         <div class="grid-item-unit">명의 데이터 분석</div>
     </div>
     <div class="grid-item item2">
-        <h3>체크 항목</h3>
+        <h3>📋 체크 항목</h3>
         <div class="grid-item-number">12</div>
         <div class="grid-item-unit">가지 생활 습관</div>
     </div>
     <div class="grid-item item3">
-        <h3>정확성</h3>
+        <h3>🎯 정확성</h3>
         <div class="grid-item-number">80%</div>
         <div class="grid-item-unit">이상 맞춤</div>
     </div>
     <div class="grid-item item4">
-        <h3>기대 효과</h3>
+        <h3>💚 기대 효과</h3>
         <div class="grid-item-number">30%</div>
         <div class="grid-item-unit">자살 예방</div>
     </div>
@@ -273,10 +483,10 @@ with col1:
     st.markdown("""
     <div class="info-card">
         <h4>📊 현재 상황</h4>
-        <p>• 청소년 중 10-20%가 정신 질환 있음<br>
-        • 한국 청소년 우울증 계속 증가 중<br>
-        • 청소년 자살이 사망 원인 2위<br>
-        • 문제가 있어도 도움받기 전에 악화되는 경우 많음<br>
+        <p>• 청소년 중 10-20%가 정신 질환 있음<br><br>
+        • 한국 청소년 우울증 계속 증가 중<br><br>
+        • 청소년 자살이 사망 원인 2위<br><br>
+        • 문제가 있어도 도움받기 전에 악화되는 경우 많음<br><br>
         • 코로나 이후 더 심해짐</p>
     </div>
     """, unsafe_allow_html=True)
@@ -285,17 +495,17 @@ with col2:
     st.markdown("""
     <div class="info-card">
         <h4>🎯 우리가 하려는 것</h4>
-        <p>• 우울한 학생들을 미리 찾기<br>
-        • SNS, 수면, 스트레스 등 원인 파악<br>
-        • AI로 자동 발견 시스템 만들기<br>
-        • 조기에 도와줄 수 있게 하기<br>
+        <p>• 우울한 학생들을 미리 찾기<br><br>
+        • SNS, 수면, 스트레스 등 원인 파악<br><br>
+        • AI로 자동 발견 시스템 만들기<br><br>
+        • 조기에 도와줄 수 있게 하기<br><br>
         • 자살 예방하기</p>
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="highlight-box">
-결론: 문제를 조기에 발견하면 도와주기가 훨씬 쉬워진다. AI를 사용하면 자동으로 위험 학생들을 찾아낼 수 있다.
+<strong>💡 결론:</strong> 문제를 조기에 발견하면 도와주기가 훨씬 쉬워진다. AI를 사용하면 자동으로 위험 학생들을 찾아낼 수 있다.
 </div>
 """, unsafe_allow_html=True)
 
@@ -309,7 +519,7 @@ st.markdown("""
 st.markdown("""
 <div class="info-card">
     <h4>📱 1,000명 청소년의 생활 정보</h4>
-    <p><b>누가 대상이었나?</b><br>
+    <p><strong>누가 대상이었나?</strong><br>
     13~18세 학생들 (우리 또래!)</p>
 </div>
 """, unsafe_allow_html=True)
@@ -320,18 +530,18 @@ with col1:
     st.markdown("""
     <div class="info-card">
         <h4>📥 체크한 항목들 (12가지)</h4>
-        <p><b>행동 습관</b><br>
+        <p><strong>행동 습관</strong><br>
         • SNS 하루에 몇 시간<br>
         • 수면 시간 (밤에 몇 시간 자는가)<br>
         • 운동 시간 (주에 몇 시간)<br>
         • 공부 성적<br>
         <br>
-        <b>마음 상태</b><br>
+        <strong>마음 상태</strong><br>
         • 스트레스 정도 (1~10점)<br>
         • 불안감 (1~10점)<br>
         • 휴대폰 중독 정도<br>
         <br>
-        <b>기타</b><br>
+        <strong>기타</strong><br>
         • 친구들 만나는 정도<br>
         • 자기 전 핸드폰 시간</p>
     </div>
@@ -341,15 +551,15 @@ with col2:
     st.markdown("""
     <div class="info-card">
         <h4>📤 우리가 예측하려는 것</h4>
-        <p><b>우울증이 있는가?</b><br>
+        <p><strong>우울증이 있는가?</strong><br>
         YES 또는 NO<br>
         <br>
         이게 우리 AI의 최종 목표다.<br>
         <br>
         위 12가지 항목들을 보고<br>
         <br>
-        "이 학생은 우울할 확률이 높다" 또는<br>
-        "이 학생은 괜찮을 것 같다"<br>
+        <strong>"이 학생은 우울할 확률이 높다"</strong> 또는<br>
+        <strong>"이 학생은 괜찮을 것 같다"</strong><br>
         <br>
         이렇게 판단하는 거다.</p>
     </div>
@@ -357,7 +567,7 @@ with col2:
 
 st.markdown("""
 <div class="highlight-box">
-<b>데이터 정리 과정:</b> 데이터를 받은 후에 이상한 것들(예: 수면 48시간, SNS -5시간) 제거하고, 빠진 부분은 평균값으로 채우고, 숫자로 통일해서 AI가 이해할 수 있게 만들었다.
+<strong>🔄 데이터 정리 과정:</strong> 데이터를 받은 후에 이상한 것들(예: 수면 48시간, SNS -5시간) 제거하고, 빠진 부분은 평균값으로 채우고, 숫자로 통일해서 AI가 이해할 수 있게 만들었다.
 </div>
 """, unsafe_allow_html=True)
 
@@ -370,11 +580,11 @@ st.markdown("""
 
 st.markdown("""
 <div class="highlight-box">
-<b>중요한 질문:</b> 우울증 있음/없음을 예측하는 것이므로 "분류" 문제다. (회귀가 아니다)
+<strong>❓ 중요한 질문:</strong> 우울증 있음/없음을 예측하는 것이므로 "분류" 문제다. (회귀가 아니다)
 </div>
 """, unsafe_allow_html=True)
 
-st.subheader("여러 모델들을 비교해봤다")
+st.subheader("🔍 여러 모델들을 비교해봤다")
 
 table_html = """
 <table class="simple-table">
@@ -396,16 +606,16 @@ table_html = """
         <td>이해하기 쉬움</td>
         <td>데이터에 너무 딱 맞아서 새 데이터에 약함</td>
     </tr>
-    <tr style="background: #f0f9ff;">
-        <td><b>Random Forest</b></td>
-        <td><b>83%</b></td>
-        <td><b>높은 정확도, 요인 파악 가능</b></td>
+    <tr style="background: linear-gradient(90deg, rgba(79, 172, 254, 0.1), transparent);">
+        <td><strong>🏆 Random Forest</strong></td>
+        <td><strong>83%</strong></td>
+        <td><strong>높은 정확도, 요인 파악 가능</strong></td>
         <td>좀 느림</td>
     </tr>
-    <tr style="background: #f0fff4;">
-        <td><b>XGBoost</b></td>
-        <td><b>86%</b></td>
-        <td><b>가장 높은 정확도</b></td>
+    <tr style="background: linear-gradient(90deg, rgba(67, 233, 123, 0.1), transparent);">
+        <td><strong>⭐ XGBoost</strong></td>
+        <td><strong>86%</strong></td>
+        <td><strong>가장 높은 정확도</strong></td>
         <td>복잡함</td>
     </tr>
     <tr>
@@ -425,10 +635,10 @@ with col1:
     st.markdown("""
     <div class="info-card">
         <h4>🏆 Random Forest 선택 이유</h4>
-        <p>• 83% 정확도 (충분히 높음)<br>
-        • 어떤 것이 가장 영향을 미치는지 알 수 있음 (SNS인가? 수면인가?)<br>
-        • 새 데이터에도 잘 작동함<br>
-        • 이해하기 쉬운 결과를 줌<br>
+        <p>• 83% 정확도 (충분히 높음)<br><br>
+        • 어떤 것이 가장 영향을 미치는지 알 수 있음 (SNS인가? 수면인가?)<br><br>
+        • 새 데이터에도 잘 작동함<br><br>
+        • 이해하기 쉬운 결과를 줌<br><br>
         • 실제 사용하기에 좋음</p>
     </div>
     """, unsafe_allow_html=True)
@@ -437,16 +647,16 @@ with col2:
     st.markdown("""
     <div class="info-card">
         <h4>🔍 XGBoost로 검증</h4>
-        <p>• Random Forest가 맞게 했는지 확인용<br>
-        • 86% 정확도 (조금 더 높음)<br>
-        • 두 모델이 비슷한 결론 내면 신뢰도 높음<br>
+        <p>• Random Forest가 맞게 했는지 확인용<br><br>
+        • 86% 정확도 (조금 더 높음)<br><br>
+        • 두 모델이 비슷한 결론 내면 신뢰도 높음<br><br>
         • 최종 예측에 둘 다 사용 가능</p>
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="highlight-box">
-<b>쉽게 말하면:</b> Random Forest는 여러 의사가 각각 진단하고 투표로 결정하는 것처럼 작동한다. 그래서 더 정확하고 신뢰할 수 있다.
+<strong>💭 쉽게 말하면:</strong> Random Forest는 여러 의사가 각각 진단하고 투표로 결정하는 것처럼 작동한다. 그래서 더 정확하고 신뢰할 수 있다.
 </div>
 """, unsafe_allow_html=True)
 
@@ -483,7 +693,7 @@ with col3:
     </div>
     """, unsafe_allow_html=True)
 
-st.subheader("각 지표가 뭐하는 건데?")
+st.subheader("📊 각 지표가 뭐하는 건데?")
 
 explanation_table = """
 <table class="simple-table">
@@ -493,22 +703,22 @@ explanation_table = """
         <th>목표</th>
     </tr>
     <tr>
-        <td><b>정확도</b></td>
+        <td><strong>정확도</strong></td>
         <td>100명 중에 몇 명을 맞게 판정했는가</td>
         <td>80명 이상</td>
     </tr>
     <tr>
-        <td><b>재현율</b></td>
+        <td><strong>재현율</strong></td>
         <td>정말 우울한 학생들 중에 몇 명을 찾아냈는가 (이게 중요!)</td>
         <td>85명 이상</td>
     </tr>
     <tr>
-        <td><b>정밀도</b></td>
+        <td><strong>정밀도</strong></td>
         <td>우울하다고 한 학생 중에 실제 우울한 학생이 몇 명인가</td>
         <td>75명 이상</td>
     </tr>
     <tr>
-        <td><b>ROC-AUC</b></td>
+        <td><strong>ROC-AUC</strong></td>
         <td>AI의 전체적인 성능 (0~1, 1에 가까울수록 좋음)</td>
         <td>0.85 이상</td>
     </tr>
@@ -519,7 +729,7 @@ st.markdown(explanation_table, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="highlight-box">
-<b>가장 중요한 것:</b> 재현율이 높아야 한다. 우울한 학생을 놓치는 게 안 된다. 괜찮은 학생을 우울하다고 잘못 진단하는 것보다 훨씬 심각하다.
+<strong>⚠️ 가장 중요한 것:</strong> 재현율이 높아야 한다. 우울한 학생을 놓치는 게 안 된다. 괜찮은 학생을 우울하다고 잘못 진단하는 것보다 훨씬 심각하다.
 </div>
 """, unsafe_allow_html=True)
 
@@ -563,8 +773,8 @@ with col1:
     st.markdown("""
     <div class="info-card">
         <h4>🏫 학교에서</h4>
-        <p>• 상담 선생님이 AI 결과 보고 위험한 학생 발견<br>
-        • 조기에 도움<br>
+        <p>• 상담 선생님이 AI 결과 보고 위험한 학생 발견<br><br>
+        • 조기에 도움<br><br>
         • 자살 사건 예방</p>
     </div>
     """, unsafe_allow_html=True)
@@ -573,8 +783,8 @@ with col2:
     st.markdown("""
     <div class="info-card">
         <h4>🏥 병원에서</h4>
-        <p>• 의사가 진료할 때 참고<br>
-        • 진단 실수 줄이기<br>
+        <p>• 의사가 진료할 때 참고<br><br>
+        • 진단 실수 줄이기<br><br>
         • 더 빠른 치료 시작</p>
     </div>
     """, unsafe_allow_html=True)
@@ -583,11 +793,13 @@ with col3:
     st.markdown("""
     <div class="info-card">
         <h4>📱 스마트폰 앱</h4>
-        <p>• 학생들이 직접 자가진단<br>
-        • "넌 이 부분 조심해" 조언<br>
+        <p>• 학생들이 직접 자가진단<br><br>
+        • "넌 이 부분 조심해" 조언<br><br>
         • 문제 있으면 전문가 연결</p>
     </div>
     """, unsafe_allow_html=True)
+
+st.markdown("---")
 
 col1, col2, col3 = st.columns(3)
 
@@ -628,10 +840,10 @@ with col1:
     st.markdown("""
     <div class="info-card">
         <h4>⚠️ 현재 문제점</h4>
-        <p>• 한 시점의 데이터만 있음 (시간 흐름 반영 못함)<br>
-        • 임상 의사의 진단 없음<br>
-        • 원인과 결과를 명확히 알 수 없음<br>
-        • 특정 지역 학생들만의 데이터<br>
+        <p>• 한 시점의 데이터만 있음 (시간 흐름 반영 못함)<br><br>
+        • 임상 의사의 진단 없음<br><br>
+        • 원인과 결과를 명확히 알 수 없음<br><br>
+        • 특정 지역 학생들만의 데이터<br><br>
         • 약 30%는 틀릴 수 있음</p>
     </div>
     """, unsafe_allow_html=True)
@@ -640,10 +852,10 @@ with col2:
     st.markdown("""
     <div class="info-card">
         <h4>🔧 앞으로 개선할 것</h4>
-        <p>• 계속 학생들을 추적 관찰 (6개월, 1년)<br>
-        • 의사 진단 데이터 추가<br>
-        • 전국 여러 지역의 학생 데이터<br>
-        • 더 복잡한 AI 모델 시도<br>
+        <p>• 계속 학생들을 추적 관찰 (6개월, 1년)<br><br>
+        • 의사 진단 데이터 추가<br><br>
+        • 전국 여러 지역의 학생 데이터<br><br>
+        • 더 복잡한 AI 모델 시도<br><br>
         • 실제로 앱으로 만들기</p>
     </div>
     """, unsafe_allow_html=True)
@@ -657,10 +869,10 @@ st.markdown("""
 
 st.markdown("""
 <div class="highlight-box">
-• 이 AI는 의사 진단을 대체할 수 없다. 보조도구일 뿐이다.<br>
-• AI가 "위험하다"고 해도 반드시 전문가(의사, 상담사)에게 확인받아야 한다.<br>
-• 개인정보는 절대 드러나지 않게 보호해야 한다.<br>
-• 모든 학생에게 공평하게 작동해야 한다.
+• <strong>이 AI는 의사 진단을 대체할 수 없다.</strong> 보조도구일 뿐이다.<br><br>
+• <strong>AI가 "위험하다"고 해도</strong> 반드시 전문가(의사, 상담사)에게 확인받아야 한다.<br><br>
+• <strong>개인정보는 절대 드러나지 않게</strong> 보호해야 한다.<br><br>
+• <strong>모든 학생에게 공평하게</strong> 작동해야 한다.
 </div>
 """, unsafe_allow_html=True)
 
@@ -684,15 +896,16 @@ roadmap_cols = st.columns(5)
 for i, item in enumerate(roadmap_items):
     with roadmap_cols[i]:
         st.markdown(f"""
-        <div class="info-card" style="background: linear-gradient(135deg, {item['color']}20 0%, {item['color']}10 100%); border-left: 4px solid {item['color']};">
-            <div style="font-weight: bold; color: {item['color']}; margin-bottom: 5px; font-size: 13px;">{item['phase']}</div>
-            <div style="font-size: 11px; color: #666; margin-bottom: 8px;">{item['timeline']}</div>
-            <div style="font-size: 12px; color: #333; line-height: 1.5;">{item['task']}</div>
+        <div class="info-card" style="background: linear-gradient(135deg, {item['color']}20 0%, {item['color']}10 100%); border-left: 5px solid {item['color']};">
+            <div style="font-weight: bold; color: {item['color']}; margin-bottom: 8px; font-size: 14px;">{item['phase']}</div>
+            <div style="font-size: 11px; color: #888; margin-bottom: 10px; font-weight: 600;">{item['timeline']}</div>
+            <div style="font-size: 13px; color: #333; line-height: 1.6; font-weight: 500;">{item['task']}</div>
         </div>
         """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="footer">
-청소년 정신건강 AI 프로젝트 | 2024
+🧠 청소년 정신건강 AI 프로젝트 | 2024<br>
+<span style="font-size: 11px;">문제 정의 • 데이터 수집 • 모델 선정 • 기대효과</span>
 </div>
 """, unsafe_allow_html=True)
