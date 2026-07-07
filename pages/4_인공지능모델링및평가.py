@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
 st.set_page_config(layout="wide", page_title="AI 정신건강 분석 대시보드", page_icon="🤖") 
 
-# 모던 스타일 고도화 CSS (디자인은 세련되게 고정)
+# 모던 스타일 고도화 CSS
 st.markdown("""
     <style>
         .block-container { padding-top: 2.5rem; padding-bottom: 2rem; }
@@ -24,6 +24,19 @@ st.markdown("""
 
 st.title("🤖 4. 인공지능 모델링 및 평가 대시보드")
 st.markdown("<p style='font-size:16px; color:#b2bec3; margin-top:-10px;'>다양한 AI 알고리즘의 파라미터를 실시간으로 제어하며 청소년의 생활 패턴과 스트레스 지수(1~10) 간의 상관관계를 다각도로 분석합니다.</p>", unsafe_allow_html=True)
+
+with st.expander("ℹ️ [필독] 대시보드를 보기 전, AI 머신러닝 용어 가이드북 읽어보기"):
+    term_col1, term_col2 = st.columns(2)
+    with term_col1:
+        st.markdown("""
+        * **정확도 (Accuracy)**: 전체 데이터 중 AI가 맞춘 비율입니다.
+        * **F1-Score (Macro)**: AI가 1점부터 10점까지 모든 스트레스 단계를 치우침 없이 골고루 다 잘 맞추고 있는지 평가하는 점수입니다.
+        """)
+    with term_col2:
+        st.markdown("""
+        * **과적합 (Overfitting)**: AI가 학습 데이터 기출문제만 외워서 새로운 데이터에서 응용력이 떨어지는 상태입니다.
+        * **하이퍼파라미터 (Hyperparameter)**: 알고리즘의 성격을 결정하는 조절 나사입니다.
+        """)
 
 # -----------------------------------------------------
 # 1. 화면 중간/상단 가로 제어판
@@ -45,13 +58,12 @@ with st.container(border=True):
         lr_c = st.slider("로지스틱 규제 강도(C값)", 0.01, 10.0, 1.0, step=0.1)
 
 # -----------------------------------------------------
-# 2. 데이터 학습 및 평가 연산 (모든 변수를 학습하되, 제어판 독립변수 최적화)
+# 2. 데이터 학습 및 평가 연산
 # -----------------------------------------------------
 @st.cache_data
 def train_and_evaluate(trees, depth, c_val):
     df = pd.read_csv("Teen_Mental_Health_Dataset.csv")
     
-    # 성별 원핫 인코딩 및 가용 변수 확장 (예측 리포트의 고도화를 위해 내부 학습은 전체 변수 반영)
     df_encoded = pd.get_dummies(df, columns=['gender'], drop_first=True)
     
     features = ['daily_social_media_hours', 'sleep_hours', 'screen_time_before_sleep', 'physical_activity',
@@ -96,11 +108,10 @@ except FileNotFoundError:
 
 if data_loaded:
     # -----------------------------------------------------
-    # 3. [위치 고정] AI 알고리즘 신뢰성 및 과적합 위험도 평가
+    # 3. AI 알고리즘 신뢰성 및 과적합 위험도 평가
     # -----------------------------------------------------
     st.markdown("---")
     st.markdown("### ⚠️ AI 알고리즘 신뢰성 및 과적합(Overfitting) 위험도 평가")
-    st.markdown("상단 제어판에서 수치를 조절하는 즉시, 모델의 훈련 상태와 과적합 현상을 실시간으로 진단합니다.")
     
     active_info = results[selected_model_name]
     train_acc = active_info["train_accuracy"]
@@ -123,24 +134,20 @@ if data_loaded:
         with risk_col2:
             st.markdown(f"<p style='font-size:15px; font-weight:600; color:#dfe6e9; margin-bottom:5px;'>🔍 {selected_model_name} 모델 진단 소견</p>", unsafe_allow_html=True)
             if overfit_gap >= 0.15:
-                st.markdown(f"현재 설정된 수치는 **훈련 데이터에 모델이 과도하게 짜맞춰진 상태(과적합)**를 유발합니다. "
-                            f"공부한 문제집(Train: {train_acc*100:.1f}%) 점수는 높지만 실전 모의고사(Test: {test_acc*100:.1f}%)에서 삐끗하는 현상입니다. "
-                            f"나무 깊이를 줄이거나 규제를 주어 가지치기를 해야 실전 신뢰도가 올라갑니다.")
+                st.markdown(f"현재 설정된 수치는 **훈련 데이터에 모델이 과도하게 짜맞춰진 상태(과적합)**를 유발합니다. 나무 깊이를 줄이거나 규제를 주어 가지치기를 해야 실전 신뢰도가 올라갑니다.")
             elif overfit_gap >= 0.05:
-                st.markdown(f"훈련 정확도({train_acc*100:.1f}%)와 검증 정확도({test_acc*100:.1f}%) 사이에 약간의 괴리가 존재합니다. "
-                            f"약간의 불안정 요소가 있으므로 복잡도 수치를 조금 깎아내려 완화하는 것이 좋습니다.")
+                st.markdown(f"훈련 정확도({train_acc*100:.1f}%)와 검증 정확도({test_acc*100:.1f}%) 사이에 약간의 괴리가 존재합니다. 복잡도 수치를 조금 깎아내려 완화하는 것이 좋습니다.")
             elif train_acc < 0.40:
                 st.markdown("패턴을 아예 배우지 못한 과소적합 상태입니다. 제어판에서 AI가 깊게 공부할 수 있도록 허용치를 늘려주세요.")
             else:
                 st.markdown(f"현재 `{selected_model_name}` 모델은 **최적의 일반화 밸런스**를 이루고 있습니다. 두 데이터셋의 스코어가 균형을 이루어 편향 없이 가장 완벽하게 분류해 낼 수 있는 견고한 상태입니다.")
 
     # -----------------------------------------------------
-    # 4. [원복 완료!] 실시간 분석 결과 리포트 (예전의 완벽한 4개 탭 구조)
+    # 4. 실시간 분석 결과 리포트 (수면 -> SNS 시간별로 수정 완료)
     # -----------------------------------------------------
     st.markdown("---")
     st.subheader("📊 실시간 분석 결과 리포트")
     
-    # 그래프 화이트 폰트 테마 적용
     plt.rcParams['text.color'] = 'white'
     plt.rcParams['axes.labelcolor'] = 'white'
     plt.rcParams['xtick.color'] = 'white'
@@ -152,11 +159,11 @@ if data_loaded:
     tab1, tab2, tab3, tab4 = st.tabs([
         "🥇 모델별 성능 비교", 
         "🔑 핵심 영향 요인 분석", 
-        "📈 수면시간별 예측 경향", 
+        "📈 SNS사용시간별 예측 경향",  # 탭 이름 변경
         "🔲 혼동 행렬 격자 점검"
     ])
     
-    # --- [탭 1] 모델별 성능 비교 (현미경 줌인 라인 차트) ---
+    # --- [탭 1] 모델별 성능 비교 ---
     with tab1:
         st.markdown("##### AI 모델별 성능 지표 비교 그래프")
         names = list(results.keys())
@@ -188,7 +195,6 @@ if data_loaded:
         current_model = results[selected_model_name]["model"]
         fig2, ax2 = plt.subplots(figsize=(10, 3.8))
         
-        # 가독성을 위해 상위 4개 핵심 생활 패턴 라벨만 깔끔하게 시각화 매핑
         core_labels = ['SNS Hours', 'Sleep Hours', 'Screen Before Sleep', 'Physical Activity']
         
         if hasattr(current_model, 'feature_importances_'):
@@ -207,27 +213,29 @@ if data_loaded:
                    f"현재 제어판 수치 기준으로 `{selected_model_name}`이 청소년의 스트레스를 예측할 때 "
                    f"가장 결정적인 단서로 지목한 생활 패턴은 **{top_feature}** 입니다. 이 요인의 변화가 예측 결과에 가장 큰 변동을 줍니다.")
 
-    # --- [탭 3] 수면시간별 예측 경향 ---
+    # --- [탭 3] SNS사용시간별 예측 경향 (수정 완료) ---
     with tab3:
-        st.markdown(f"##### {selected_model_name}의 수면시간별 예측 경향 그래프")
+        st.markdown(f"##### {selected_model_name}의 SNS 사용 시간별 예측 경향 그래프")
         y_true = results[selected_model_name]["y_test"]
         y_pred = results[selected_model_name]["y_pred"]
         
         fig3, ax3 = plt.subplots(figsize=(10, 3.8))
-        sns.scatterplot(x=X_test_df['sleep_hours'], y=y_true, alpha=0.3, label='Actual Data', color='#b2bec3', ax=ax3)
-        sns.lineplot(x=X_test_df['sleep_hours'], y=y_pred, color='#e74c3c', marker='o', label='AI Predict Trend', ax=ax3, errorbar=None)
-        ax3.set_xlabel("Sleep Hours", color='white')
+        # 수면시간(sleep_hours) 대신 SNS사용시간(daily_social_media_hours) 기반 플롯
+        sns.scatterplot(x=X_test_df['daily_social_media_hours'], y=y_true, alpha=0.3, label='Actual Data', color='#b2bec3', ax=ax3)
+        sns.lineplot(x=X_test_df['daily_social_media_hours'], y=y_pred, color='#e67e22', marker='o', label='AI Predict Trend', ax=ax3, errorbar=None)
+        ax3.set_xlabel("Daily SNS Hours", color='white')
         ax3.set_ylabel("Stress Level (1~10)", color='white')
         sns.despine()
         legend3 = ax3.legend(facecolor='#2d3436', edgecolor='none')
         for text in legend3.get_texts(): text.set_color('white')
         st.pyplot(fig3)
         
-        low_sleep_pred = y_pred[X_test_df['sleep_hours'] <= 6.0].mean()
-        high_sleep_pred = y_pred[X_test_df['sleep_hours'] > 6.0].mean()
+        # SNS 이용 시간에 따른 인공지능 트렌드 수치 분석 소견 자동 연산
+        low_sns_pred = y_pred[X_test_df['daily_social_media_hours'] <= 3.0].mean()
+        high_sns_pred = y_pred[X_test_df['daily_social_media_hours'] > 5.0].mean()
         st.success(f"📈 **실시간 그래프 분석 결과:** \n"
-                   f"빨간색 AI 예측 트렌드 선의 흐름을 분석한 결과, 수면 시간이 6시간 이하일 때 스트레스 지수 예측치 평균은 **{low_sleep_pred:.1f}점**인 반면, "
-                   f"6시간을 초과하여 충분히 잘 때의 예측 평균은 **{high_sleep_pred:.1f}점**으로 뚜렷하게 감소하는 경향성(우하향)을 실시간으로 그려내고 있습니다.")
+                   f"주황색 AI 예측 트렌드 선의 흐름을 분석한 결과, 하루 SNS 이용 시간이 3시간 이하인 집단의 예측 스트레스 평균은 **{low_sns_pred:.1f}점**인 반면, "
+                   f"5시간을 초과하여 장시간 몰입할 때의 예측 평균은 **{high_sns_pred:.1f}점**으로 뚜렷하게 점수가 상승하는 경향성(우상향)을 실시간으로 그려내고 있습니다.")
 
     # --- [탭 4] 혼동 행렬 격자 점검 ---
     with tab4:
@@ -243,9 +251,8 @@ if data_loaded:
         correct_samples = np.trace(cm)
         st.success(f"🔲 **실시간 그래프 분석 결과:** \n"
                    f"전체 검증 데이터 {total_samples}건 중, 진한 파란색 대각선 격자에 안착하여 AI가 한 치의 오차도 없이 완벽하게 실제 스트레스 점수를 맞춘 샘플은 "
-                   f"총 **{correct_samples}건**입니다. 나머지 칸에 적힌 숫자들이 AI가 한두 단계씩 헷갈려한 오답 분과 영역입니다.")
+                   f"총 **{correct_samples}건**입니다.")
 
-    # 전 모델 성능 스코어보드 표 요약
     st.markdown("<p style='font-size:15px; font-weight:600; color:#dfe6e9; margin-bottom:-5px; margin-top:20px;'>📋 전 알고리즘 성능 스코어보드 요약</p>", unsafe_allow_html=True)
     st.table(pd.DataFrame([
         {
@@ -282,7 +289,6 @@ if data_loaded:
         btn_triggered = st.button("🧠 AI 종합 분석 및 맞춤형 심리 처방전 출력", use_container_width=True)
 
     if btn_triggered:
-        # 독립변수 8개 정렬 순서대로 주입하여 종합 융합 예측 수행
         input_data = np.array([[sns_hours, sleep_hours, screen_time_before_sleep, exercise_hours, user_age, academic_performance, anxiety_level, addiction_level]])
         active_model = results[selected_model_name]["model"]
         predicted_stress = active_model.predict(input_data)[0]
@@ -304,7 +310,6 @@ if data_loaded:
             st.markdown("#### 📝 다각도 매칭 라이프 가이드 피드백 (심리/학업 데이터 융합)")
             feedback_list = []
             
-            # 메인 탭 대신 여기에 다각도 데이터 피드백 정보들을 정교하게 서술하여 추가함!
             if anxiety_level >= 7:
                 feedback_list.append("- 🧠 **위험 수준의 자가 불안감 검출:** 수면 부족 외에도 일상 속 만성적인 심리적 불안 요소가 인공지능 스트레스 상승 가속의 주요 원인으로 작동하고 있습니다.")
             if academic_performance <= 2.0:
@@ -327,7 +332,6 @@ if data_loaded:
                 care_advice = "균형 잡힌 라이프 스타일과 차분한 내면 상태가 융합된 최상의 마인드 컨디션입니다. 기복 없이 현재의 건강한 루틴을 계속 이어나가길 응원합니다."
             st.markdown(care_advice)
 
-            # 진단서 다운로드 텍스트 빌드
             report_txt = f"""[AI 청소년 융합 정신건강 진단 처방전]
 -----------------------------------------
 ■ 진단 모델 알고리즘: {selected_model_name}
