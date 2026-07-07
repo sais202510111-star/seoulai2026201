@@ -18,6 +18,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+from io import StringIO
 
 st.set_page_config(
     page_title="청소년 정신건강 AI",
@@ -141,7 +142,56 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 사이드바 네비게이션
+# --- 컬럼 rename 매핑 (요청하신 10개 컬럼)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RENAME_EN = {
+    "age": "Age",
+    "gender": "Gender",
+    "daily_social_media_hours": "Daily Social Media Hours (hrs/day)",
+    "platform_usage": "Primary Platform",
+    "sleep_hours": "Sleep Hours (hrs/night)",
+    "screen_time_before_sleep": "Screen Time Before Sleep (mins)",
+    "academic_performance": "Academic Performance (GPA/score)",
+    "physical_activity": "Physical Activity (hrs/week)",
+    "social_interaction_level": "Social Interaction Level (1-10)",
+    "stress_level": "Stress Level (1-10)"
+}
+
+RENAME_KO = {
+    "age": "연령(세)",
+    "gender": "성별",
+    "daily_social_media_hours": "일일 SNS 사용 시간(시간/일)",
+    "platform_usage": "주 사용 플랫폼",
+    "sleep_hours": "수면 시간(시간)",
+    "screen_time_before_sleep": "취침 전 화면 사용 시간(분)",
+    "academic_performance": "학업 성취도(성적)",
+    "physical_activity": "신체 활동(시간/주)",
+    "social_interaction_level": "사회적 교류 수준(1-10)",
+    "stress_level": "스트레스 수준(1-10)"
+}
+
+RENAME_BI = {
+    "age": "Age (연령)",
+    "gender": "Gender (성별)",
+    "daily_social_media_hours": "Daily Social Media Hours (일일 SNS 사용 시간)",
+    "platform_usage": "Primary Platform (주 사용 플랫폼)",
+    "sleep_hours": "Sleep Hours (수면 시간)",
+    "screen_time_before_sleep": "Screen Time Before Sleep (취침 전 화면 사용 시간)",
+    "academic_performance": "Academic Performance (학업 성취도)",
+    "physical_activity": "Physical Activity (신체 활동)",
+    "social_interaction_level": "Social Interaction Level (사회적 교류 수준)",
+    "stress_level": "Stress Level (스트레스 수준)"
+}
+
+RENAME_OPTIONS = {
+    "English": RENAME_EN,
+    "한국어": RENAME_KO,
+    "English (한글)": RENAME_BI
+}
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 사이드바 네비게이션 & 데이터 업로드
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 with st.sidebar:
@@ -152,6 +202,81 @@ with st.sidebar:
         "📊 데이터 수집",
         "🤖 모델 선택"
     ], label_visibility="collapsed")
+    st.divider()
+
+    st.markdown("## 🔁 컬럼 라벨 선택")
+    label_choice = st.radio("", ["English", "한국어", "English (한글)"], index=2, label_visibility="collapsed")
+
+    st.markdown("## 📥 데이터 업로드 (CSV)")
+    uploaded_file = st.file_uploader("CSV 파일 선택", type=["csv"])
+    st.markdown("• 업로드하지 않으면 예시 데이터로 대체됩니다.")
+
+    st.divider()
+    st.markdown("## ⚙️ 옵션")
+    if st.button("컬럼 매핑 설명 보기"):
+        st.write("원본 컬럼명과 바꿀 라벨 매핑:")
+        st.write("Original -> 선택된 라벨")
+        example_map = {k: RENAME_OPTIONS[label_choice].get(k, "(no mapping)") for k in list(RENAME_EN.keys())}
+        st.json(example_map)
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 데이터 로드 및 컬럼명 변경 함수
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+def load_data(uploaded):
+    try:
+        if uploaded is None:
+            return None
+        # try default utf-8 first, fallback to cp949 for 한글 윈도우 csv
+        try:
+            df = pd.read_csv(uploaded)
+        except Exception:
+            uploaded.seek(0)
+            df = pd.read_csv(uploaded, encoding='cp949')
+        return df
+    except Exception as e:
+        st.error(f"데이터 로드 실패: {e}")
+        return None
+
+def rename_columns(df: pd.DataFrame, choice: str):
+    mapping = RENAME_OPTIONS.get(choice, RENAME_BI)
+    # Only rename keys that exist in df
+    available_keys = {k: v for k, v in mapping.items() if k in df.columns}
+    renamed = df.rename(columns=available_keys)
+    return renamed, available_keys
+
+# Prepare dataframe: uploaded or sample
+df = load_data(uploaded_file)
+
+if df is None:
+    # 예시 데이터 생성 (간단한 더미 행들)
+    df = pd.DataFrame({
+        "age": [15, 17, 16],
+        "gender": ["F", "M", "F"],
+        "daily_social_media_hours": [3, 5, 2],
+        "platform_usage": ["Instagram", "TikTok", "YouTube"],
+        "sleep_hours": [7, 5.5, 8],
+        "screen_time_before_sleep": [45, 120, 10],
+        "academic_performance": [85, 72, 90],
+        "physical_activity": [3, 1, 4],
+        "social_interaction_level": [6, 3, 8],
+        "stress_level": [7, 9, 4]
+    })
+    st.sidebar.info("샘플 데이터를 사용하고 있습니다. CSV를 업로드하면 대체됩니다.")
+
+renamed_df, applied_map = rename_columns(df, label_choice)
+
+# 미리보기, 컬럼명 변경 결과 안내, 다운로드
+with st.expander("🔎 업로드된 데이터 미리보기 및 컬럼명 변경"):
+    st.write("선택된 라벨 방식:", label_choice)
+    st.write("원본 컬럼 (첫 20개):", list(df.columns)[:20])
+    st.write("적용된 매핑 (원본 -> 변경):")
+    st.table(pd.DataFrame(list(applied_map.items()), columns=["원본 컬럼", "변경 라벨"]))
+    st.write("변경된 데이터 (상위 10개):")
+    st.dataframe(renamed_df.head(10), use_container_width=True)
+    # 다운로드
+    csv_buffer = renamed_df.to_csv(index=False).encode('utf-8')
+    st.download_button("변경된 데이터 다운로드 (CSV UTF-8)", csv_buffer, "renamed_data.csv", "text/csv")
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # PAGE 1: 핵심 요약
@@ -169,10 +294,10 @@ if page == "🎯 핵심 요약":
     # 핵심 수치
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.markdown("""
+        st.markdown(f"""
         <div class="metric-box">
             <div class="metric-label">📊 학생 수</div>
-            <div class="metric-number">1,000</div>
+            <div class="metric-number">{len(renamed_df)}</div>
             <div class="metric-label">명 데이터</div>
         </div>
         """, unsafe_allow_html=True)
