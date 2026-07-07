@@ -186,8 +186,7 @@ if data_loaded:
         best_acc_model = max(results, key=lambda k: results[k]["accuracy"])
         best_acc_val = results[best_acc_model]["accuracy"] * 100
         
-        st.success(f"틀린 그림 찾기 같던 그래프를 **y축 범위를 점수 밀집 구역({y_min*100:.0f}% ~ {y_max*100:.0f}%)으로 현미경처럼 확대**하여 시각화했습니다.\n\n"
-                   f"📈 **실시간 그래프 분석 결과:** \n"
+        st.success(f"📈 **실시간 그래프 분석 결과:** \n"
                    f"미세한 차이를 정밀 분석한 결과, 현재 설정 기준 가장 높은 정확도를 갱신한 우수 알고리즘은 **{best_acc_model}**({best_acc_val:.1f}%)입니다.")
 
     # --- [탭 2] 핵심 영향 요인 분석 ---
