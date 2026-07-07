@@ -1,20 +1,17 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 import os
 
 # 페이지 기본 설정
 st.set_page_config(
-    page_title="청소년 정신 건강 데이터 분석",
-    page_icon="🧠",
+    page_title="데이터 시각화 (EDA)",
+    page_icon="📊",
     layout="wide"
 )
 
-# ----------------------------------------------------------------
-# 🔥 1. 메인 헤더 타이틀 영역
-# ----------------------------------------------------------------
-st.title("📱 소셜미디어가 청소년 정신건강에 미치는 영향")
-st.caption("2026학년도 인공지능과 미래사회 나만의 AI 데이터 분석 웹/앱 제작 프로젝트 🚀")
-st.markdown("---")
+st.title("📊 청소년 정신 건강 데이터 시각화 결과 보고서")
+st.markdown("우리 데이터셋의 주요 핵심 항목들을 5가지 대표 시각화 기법을 통해 각각 개별 그래프로 시각화한 결과입니다.")
 
 data_path = "Teen_Mental_Health_Dataset.csv"
 
@@ -22,73 +19,84 @@ if os.path.exists(data_path):
     df = pd.read_csv(data_path)
     
     # ----------------------------------------------------------------
-    # 📊 2. 프로젝트 개요 및 수집 데이터 메트릭 (상단 카드 정돈)
+    # 📦 1. 박스 차트 (Box Plot) 영역
     # ----------------------------------------------------------------
-    st.subheader("📌 1. 수집 데이터 개요")
-    st.markdown("본 프로젝트는 디지털 매체 사용과 청소년 심리 상태 간의 연관성을 증명하기 위해 실제 1,000명의 학생 데이터를 수집 및 정제하여 분석을 진행합니다.")
-    
-    # 주요 수치 카드 배치
-    m1, m2, m3, m4 = st.columns(4)
-    with m1:
-        st.metric(label="총 조사 청소년 수", value=f"{len(df)} 명")
-    with m2:
-        st.metric(label="평균 SNS 사용 시간", value=f"{df['daily_social_media_hours'].mean():.1f} 시간")
-    with m3:
-        st.metric(label="평균 수면 시간", value=f"{df['sleep_hours'].mean():.1f} 시간")
-    with m4:
-        st.metric(label="평균 스트레스 지수", value=f"{df['stress_level'].mean():.1f} / 10점")
-
     st.markdown("---")
-
-    # ----------------------------------------------------------------
-    # 🗺️ 3. 대시보드 전체 목차 및 구성 항목 안내 (2단 레이아웃)
-    # ----------------------------------------------------------------
-    col1, col2 = st.columns([1, 1])
+    st.subheader("📦 1. 박스 차트 (Box Plot) : 성별에 따른 정서 지표 분포 범위")
+    st.markdown("성별 그룹별로 청소년들의 스트레스, 불안감, 중독 수준의 사분위 범위와 중앙값을 직관적으로 비교합니다.")
     
-    with col1:
-        st.subheader("🗺️ 대시보드 핵심 구조 안내")
-        st.markdown("""
-        좌측 사이드바 메뉴를 이동하며 우리 연구팀이 설계한 데이터 파이프라인의 실시간 연동 과정을 확인하실 수 있습니다.
-        
-        * **1️⃣ 데이터 개요 및 실태 조사 (현재 페이지)**: 전체 수집 데이터의 특징 파악 및 문제 정의
-        * **2️⃣ 데이터 전처리 및 정제**: 결측치 정제 및 학습 데이터셋 가공 과정
-        * **3️⃣ 데이터 자유 시각화 존 (EDA)**: 5대 핵심 차트(박스, 바이올린, 히스토그램, 히트맵, 산점도) 탐색
-        * **4️⃣ 인공지능 모델링 및 위험 예측기**: 머신러닝 알고리즘 기반 위험도 시뮬레이터 운영
-        """)
+    box_col1, box_col2, box_col3 = st.columns(3)
+    with box_col1:
+        fig_box1 = px.box(df, x="gender", y="stress_level", color="gender", title="성별에 따른 스트레스 지수 분포", template="plotly_white", color_discrete_sequence=px.colors.qualitative.Safe)
+        st.plotly_chart(fig_box1, use_container_width=True)
+    with box_col2:
+        fig_box2 = px.box(df, x="gender", y="anxiety_level", color="gender", title="성별에 따른 불안감 수준 분포", template="plotly_white", color_discrete_sequence=px.colors.qualitative.Safe)
+        st.plotly_chart(fig_box2, use_container_width=True)
+    with box_col3:
+        fig_box3 = px.box(df, x="gender", y="addiction_level", color="gender", title="성별에 따른 스마트폰 중독도 분포", template="plotly_white", color_discrete_sequence=px.colors.qualitative.Safe)
+        st.plotly_chart(fig_box3, use_container_width=True)
 
-    with col2:
-        st.subheader("🎯 분석 대상 고유 지표 (Features)")
-        st.markdown("수집된 데이터셋의 모든 항목을 독립적인 요소로 분류하여 추적합니다.")
-        
-        # 가독성을 극대화한 2단 컬럼 항목 나열
-        f_col1, f_col2 = st.columns(2)
-        with f_col1:
-            st.info("**📱 매체 사용 지표**\n* SNS 사용량 (`daily_social_media_hours`)\n* 선호 플랫폼 (`platform_usage`)\n* 취침 전 화면 시청 (`screen_time_before_sleep`)")
-            st.success("**🏃‍♂️ 신체 및 일상 지표**\n* 일일 운동 시간 (`physical_activity`)\n* 오프라인 소통 (`social_interaction_level`)\n* 평균 수면 시간 (`sleep_hours`)")
-        with f_col2:
-            st.warning("**🧠 정신 건강 결과 지표**\n* 체감 스트레스 (`stress_level`)\n* 정서적 불안감 (`anxiety_level`)\n* 스마트폰 과몰입 중독도 (`addiction_level`)")
-            st.error("**🏫 기본 인적 및 학업 지표**\n* 대상자 연령 및 성별 (`age` / `gender`)\n* 학업 성취도 GPA (`academic_performance`)")
-
+    # ----------------------------------------------------------------
+    # 🎻 2. 분포 차트 (Violin Plot) 영역
+    # ----------------------------------------------------------------
     st.markdown("---")
+    st.subheader("🎻 2. 분포 차트 (Violin Plot) : 플랫폼별 SNS 사용 현황 및 수면 밀도")
+    st.markdown("주로 사용하는 SNS 플랫폼 유형에 따라 하루 평균 사용 시간과 수면 시간의 데이터 밀집 패턴(지형 구조)을 확인합니다.")
+    
+    v_col1, v_col2 = st.columns(2)
+    with v_col1:
+        fig_viol1 = px.violin(df, x="platform_usage", y="daily_social_media_hours", color="platform_usage", box=True, points="all", title="주 사용 플랫폼별 하루 SNS 시간 밀도", template="plotly_white", color_discrete_sequence=px.colors.qualitative.Pastel)
+        st.plotly_chart(fig_viol1, use_container_width=True)
+    with v_col2:
+        fig_viol2 = px.violin(df, x="platform_usage", y="sleep_hours", color="platform_usage", box=True, points="all", title="주 사용 플랫폼별 일일 수면 시간 밀도", template="plotly_white", color_discrete_sequence=px.colors.qualitative.Pastel)
+        st.plotly_chart(fig_viol2, use_container_width=True)
 
     # ----------------------------------------------------------------
-    # 📰 4. 사회적 배경 실태 조사 데이터 가이드
+    # 📐 3. 히스토그램 (Histogram) 영역
     # ----------------------------------------------------------------
-    st.subheader("📰 디지털 미디어 과의존 사회적 배경 및 실태")
+    st.markdown("---")
+    st.subheader("📐 3. 히스토그램 (Histogram) : 핵심 건강 요소의 학생 빈도수 조사")
+    st.markdown("우리 데이터에 포함된 청소년들의 실제 수면 시간과 취침 전 스마트폰 사용 시간이 어떤 형태로 분포되어 있는지 빈도를 측정합니다.")
     
-    # HTML 카드 스타일을 차분하고 눈이 안 아픈 회색/블루 조합으로 전면 수정
-    st.markdown("""
-    <div style="background-color:#f8fafc; padding:20px; border-left:6px solid #3b82f6; border-radius:8px; margin-bottom:15px;">
-        <h4 style="margin-top:0; color:#1e293b; font-size:18px;">📊 연령대별 청소년 인터넷·스마트폰 과의존 고위험군 비중 (전수조사 통계)</h4>
-        <p style="color:#475569; margin-bottom:8px;">매체 사용 시간이 증가함에 따라 고등 학년으로 올라갈수록 정서적 과몰입 위험이 심화되는 경향을 보입니다.</p>
-        <ul style="color:#334155; font-size:15px; line-height: 2;">
-            <li>초등학교 4학년 군: <b>18.5%</b></li>
-            <li>중학교 1학년 군: <b>16.3%</b></li>
-            <li>고등학교 1학년 군: <span style="color:#ef4444; font-weight:bold;">20.6% (역대 최고 위험치 도달)</span></li>
-        </ul>
-        <small style="color:#64748b;">🔗 관련 자료 확인: <a href="https://www.yna.co.kr/view/AKR20260611086300017" target="_blank" style="color:#3b82f6; text-decoration:none; font-weight:bold;">[연합뉴스 관련 실태조사 기사 원문]</a></small>
-    </div>
-    """, unsafe_allow_html=True)
+    h_col1, h_col2 = st.columns(2)
+    with h_col1:
+        fig_hist1 = px.histogram(df, x="sleep_hours", title="전체 학생들의 수면 시간 빈도 분포", nbins=15, template="plotly_white", color_discrete_sequence=["#3b82f6"])
+        st.plotly_chart(fig_hist1, use_container_width=True)
+    with h_col2:
+        fig_hist2 = px.histogram(df, x="screen_time_before_sleep", title="전체 학생들의 취침 전 화면 시청 시간 빈도 분포", nbins=15, template="plotly_white", color_discrete_sequence=["#ef4444"])
+        st.plotly_chart(fig_hist2, use_container_width=True)
+
+    # ----------------------------------------------------------------
+    # 🔥 4. 상관관계 지도 (Heatmap) 영역
+    # ----------------------------------------------------------------
+    st.markdown("---")
+    st.subheader("🔥 4. 상관관계 지도 (Heatmap) : 전체 수치 변수 간 연관성 분석 격차판")
+    st.markdown("데이터셋에 있는 모든 수치형 데이터 항목들을 한자리에 모아 서로 얼마나 밀접하게 동맹 혹은 반비례 관계를 갖는지 수치 톤으로 요약합니다.")
+    
+    numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+    corr_matrix = df[numeric_cols].corr()
+    
+    fig_heatmap = px.imshow(
+        corr_matrix, text_auto=".2f", aspect="auto",
+        color_continuous_scale="RdBu_r", zmin=-1.0, zmax=1.0,
+        title="🧠 데이터 변수 간 피어슨 상관계수 행렬 격자판"
+    )
+    st.plotly_chart(fig_heatmap, use_container_width=True)
+
+    # ----------------------------------------------------------------
+    # ✨ 5. 흐름 산점도 (Scatter Plot) 영역
+    # ----------------------------------------------------------------
+    st.markdown("---")
+    st.subheader("✨ 5. 흐름 산점도 (Scatter Plot) : 리스크 요인별 추세선과 흐름")
+    st.markdown("개별 청소년의 데이터 포인트를 사방에 뿌려 원인 지표의 변화에 따른 정신건강 결과 수치의 실시간 경향을 추적합니다.")
+    
+    s_col1, s_col2 = st.columns(2)
+    with s_col1:
+        fig_scat1 = px.scatter(df, x="daily_social_media_hours", y="stress_level", color="gender", trendline="ols", title="SNS 사용 시간 증가에 따른 스트레스 흐름과 추세선", opacity=0.7, template="plotly_white")
+        st.plotly_chart(fig_scat1, use_container_width=True)
+    with s_col2:
+        fig_scat2 = px.scatter(df, x="sleep_hours", y="anxiety_level", color="gender", trendline="ols", title="평균 수면 시간 변화에 따른 불안 지수 흐름과 추세선", opacity=0.7, template="plotly_white")
+        st.plotly_chart(fig_scat2, use_container_width=True)
 
 else:
     st.error("❌ 'Teen_Mental_Health_Dataset.csv' 파일을 불러올 수 없습니다. 경로를 확인해 주세요.")
