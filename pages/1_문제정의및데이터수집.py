@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import time
 
 st.set_page_config(
     page_title="청소년 정신건강 AI 프로젝트",
@@ -17,19 +16,20 @@ st.markdown("""
     }
     
     /* 배경 */
-    body {
+    html, body, [data-testid="stAppViewContainer"] {
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
     }
     
-    /* 메인 헤더 - 애니메이션 추가 */
+    /* 메인 헤더 - 프리미엄 디자인 */
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 80px 40px;
-        border-radius: 20px;
+        padding: 100px 40px;
+        border-radius: 24px;
         color: white;
         text-align: center;
-        margin-bottom: 60px;
-        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+        margin: 30px 0 80px 0;
+        box-shadow: 0 30px 80px rgba(102, 126, 234, 0.35);
         position: relative;
         overflow: hidden;
     }
@@ -41,76 +41,57 @@ st.markdown("""
         left: 0;
         right: 0;
         bottom: 0;
-        background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+        background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%);
         pointer-events: none;
     }
     
+    .main-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    
     .main-header h1 {
-        font-size: 52px;
-        margin-bottom: 15px;
+        font-size: 56px;
+        margin-bottom: 18px;
         font-weight: 900;
         position: relative;
         z-index: 1;
-        animation: fadeInDown 1s ease-out;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
     }
     
     .main-header p {
-        font-size: 22px;
+        font-size: 24px;
         opacity: 0.95;
         position: relative;
         z-index: 1;
-        animation: fadeInUp 1s ease-out 0.2s backwards;
+        font-weight: 300;
+        letter-spacing: 0.5px;
     }
     
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes slideInLeft {
-        from {
-            opacity: 0;
-            transform: translateX(-50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    /* 그리드 컨테이너 */
+    /* 그리드 컨테이너 - 프리미엄 */
     .grid-container {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 25px;
-        margin-bottom: 80px;
+        gap: 30px;
+        margin-bottom: 100px;
+        padding: 0 20px;
     }
     
     .grid-item {
         background: white;
-        padding: 35px 25px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        border-top: 5px solid;
+        padding: 40px 30px;
+        border-radius: 20px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.08);
+        border-top: 6px solid;
         text-align: center;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
         position: relative;
     }
@@ -122,15 +103,15 @@ st.markdown("""
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, transparent 100%);
-        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 100%);
+        border-radius: 20px;
         opacity: 0;
-        transition: opacity 0.4s;
+        transition: opacity 0.5s;
     }
     
     .grid-item:hover {
-        transform: translateY(-12px) scale(1.02);
-        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        transform: translateY(-16px) scale(1.03);
+        box-shadow: 0 35px 80px rgba(0,0,0,0.16);
     }
     
     .grid-item:hover::before {
@@ -138,16 +119,17 @@ st.markdown("""
     }
     
     .grid-item h3 {
-        font-size: 16px;
-        margin-bottom: 12px;
+        font-size: 17px;
+        margin-bottom: 15px;
         color: #333;
-        font-weight: 600;
+        font-weight: 700;
+        letter-spacing: 0.3px;
     }
     
     .grid-item-number {
-        font-size: 48px;
+        font-size: 56px;
         font-weight: 900;
-        margin-bottom: 12px;
+        margin-bottom: 15px;
         background: linear-gradient(135deg, var(--color1), var(--color2));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -155,9 +137,10 @@ st.markdown("""
     }
     
     .grid-item-unit {
-        font-size: 13px;
-        color: #888;
-        font-weight: 500;
+        font-size: 14px;
+        color: #999;
+        font-weight: 600;
+        letter-spacing: 0.2px;
     }
     
     .item1 { 
@@ -186,86 +169,89 @@ st.markdown("""
     
     /* 섹션 */
     .section {
-        margin-bottom: 70px;
+        margin-bottom: 90px;
+        padding: 0 20px;
     }
     
     .section-title {
-        font-size: 36px;
+        font-size: 42px;
         font-weight: 900;
-        margin-bottom: 35px;
-        color: #333;
-        padding-bottom: 20px;
-        border-bottom: 4px solid;
-        border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+        margin-bottom: 50px;
+        color: #222;
+        padding-bottom: 25px;
+        border-bottom: 5px solid;
+        border-image: linear-gradient(90deg, #667eea 0%, #764ba2 100%) 1;
         position: relative;
+        letter-spacing: -0.5px;
     }
     
-    .section-title::before {
+    .section-title::after {
         content: '';
         position: absolute;
-        bottom: -8px;
+        bottom: -15px;
         left: 0;
-        width: 60px;
-        height: 4px;
+        width: 80px;
+        height: 5px;
         background: linear-gradient(90deg, #667eea, #764ba2);
-        border-radius: 2px;
+        border-radius: 3px;
     }
     
-    /* 정보 카드 */
+    /* 정보 카드 - 프리미엄 */
     .info-card {
         background: white;
-        padding: 30px;
-        border-radius: 14px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        transition: all 0.3s ease;
+        padding: 40px;
+        border-radius: 18px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         position: relative;
-        border-left: 5px solid #667eea;
+        border-left: 6px solid #667eea;
     }
     
     .info-card:hover {
-        transform: translateX(5px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+        transform: translateX(8px);
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.15);
     }
     
     .info-card h4 {
-        font-size: 18px;
-        margin-bottom: 15px;
-        color: #333;
-        font-weight: 700;
+        font-size: 20px;
+        margin-bottom: 20px;
+        color: #222;
+        font-weight: 800;
+        letter-spacing: -0.3px;
     }
     
     .info-card p {
         color: #666;
-        line-height: 1.8;
-        font-size: 14px;
-        font-weight: 500;
-    }
-    
-    /* 강조 박스 */
-    .highlight-box {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.1) 100%);
-        padding: 25px;
-        border-left: 5px solid #667eea;
-        border-radius: 12px;
-        margin: 30px 0;
+        line-height: 2;
         font-size: 15px;
-        color: #333;
-        line-height: 1.8;
         font-weight: 500;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
     }
     
-    /* 플로우 스텝 */
+    /* 강조 박스 - 프리미엄 */
+    .highlight-box {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.08) 100%);
+        padding: 35px;
+        border-left: 6px solid #667eea;
+        border-radius: 16px;
+        margin: 40px 0;
+        font-size: 16px;
+        color: #333;
+        line-height: 2;
+        font-weight: 500;
+        box-shadow: inset 0 2px 8px rgba(0,0,0,0.04);
+        backdrop-filter: blur(10px);
+    }
+    
+    /* 플로우 스텝 - 프리미엄 */
     .flow-step {
         display: flex;
         align-items: flex-start;
-        margin-bottom: 20px;
-        animation: slideInLeft 0.6s ease-out;
+        margin-bottom: 25px;
     }
     
     .flow-number {
-        width: 55px;
-        height: 55px;
+        width: 65px;
+        height: 65px;
         background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
         border-radius: 50%;
@@ -273,49 +259,51 @@ st.markdown("""
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 22px;
-        margin-right: 20px;
+        font-size: 26px;
+        margin-right: 25px;
         flex-shrink: 0;
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
     }
     
     .flow-content {
         background: white;
-        padding: 18px 22px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        padding: 22px 28px;
+        border-radius: 14px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
         flex-grow: 1;
-        border-left: 4px solid #667eea;
-        transition: all 0.3s ease;
+        border-left: 5px solid #667eea;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     
     .flow-content:hover {
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
-        transform: translateX(3px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.18);
+        transform: translateX(5px);
     }
     
     .flow-content strong {
-        color: #333;
+        color: #222;
         display: block;
-        margin-bottom: 6px;
-        font-size: 15px;
+        margin-bottom: 8px;
+        font-size: 16px;
+        font-weight: 700;
     }
     
     .flow-content p {
         color: #666;
-        font-size: 13px;
+        font-size: 14px;
         margin: 0;
-        line-height: 1.6;
+        line-height: 1.7;
+        font-weight: 500;
     }
     
-    /* 메트릭 카드 */
+    /* 메트릭 카드 - 프리미엄 */
     .metric-card {
         background: white;
-        padding: 30px;
-        border-radius: 14px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        padding: 40px;
+        border-radius: 18px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.08);
         text-align: center;
-        transition: all 0.4s ease;
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
         position: relative;
         overflow: hidden;
@@ -328,14 +316,14 @@ st.markdown("""
         right: -50%;
         width: 100%;
         height: 100%;
-        background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
         opacity: 0;
-        transition: opacity 0.4s;
+        transition: opacity 0.5s;
     }
     
     .metric-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 45px rgba(0,0,0,0.15);
+        transform: translateY(-12px);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.15);
     }
     
     .metric-card:hover::before {
@@ -343,48 +331,51 @@ st.markdown("""
     }
     
     .metric-value {
-        font-size: 42px;
+        font-size: 52px;
         font-weight: 900;
         color: #667eea;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         position: relative;
         z-index: 1;
     }
     
     .metric-label {
-        font-size: 13px;
-        color: #888;
-        font-weight: 600;
+        font-size: 14px;
+        color: #999;
+        font-weight: 700;
         position: relative;
         z-index: 1;
+        letter-spacing: 0.3px;
     }
     
-    /* 테이블 */
+    /* 테이블 - 프리미엄 */
     .simple-table {
         width: 100%;
         border-collapse: collapse;
-        margin: 25px 0;
-        font-size: 13px;
-        border-radius: 12px;
+        margin: 35px 0;
+        font-size: 14px;
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.1);
     }
     
     .simple-table th {
         background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
-        padding: 16px;
+        padding: 20px;
         text-align: left;
-        font-weight: 700;
+        font-weight: 800;
+        letter-spacing: 0.3px;
     }
     
     .simple-table td {
-        padding: 14px 16px;
+        padding: 18px 20px;
         border-bottom: 1px solid #f0f0f0;
+        font-weight: 500;
     }
     
     .simple-table tr:hover {
-        background: linear-gradient(90deg, rgba(102, 126, 234, 0.05), transparent);
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.08), transparent);
     }
     
     .simple-table tr:last-child td {
@@ -394,33 +385,22 @@ st.markdown("""
     /* 푸터 */
     .footer {
         text-align: center;
-        padding: 40px;
+        padding: 50px 40px;
         color: #999;
         border-top: 2px solid #e0e0e0;
-        margin-top: 80px;
-        font-size: 13px;
-        font-weight: 500;
-    }
-    
-    /* 스크롤 트리거 애니메이션 */
-    .fade-in {
-        opacity: 0;
-        animation: fadeIn 0.8s ease-out forwards;
-    }
-    
-    @keyframes fadeIn {
-        to {
-            opacity: 1;
-        }
+        margin-top: 100px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
     }
     
     /* 서브헤더 */
     .stSubheader {
-        font-size: 22px;
+        font-size: 26px;
         font-weight: 800 !important;
         color: #333 !important;
-        margin-top: 30px !important;
-        margin-bottom: 20px !important;
+        margin-top: 40px !important;
+        margin-bottom: 30px !important;
     }
     
     /* 반응형 */
@@ -429,8 +409,12 @@ st.markdown("""
             grid-template-columns: repeat(2, 1fr);
         }
         
-        .roadmap_cols {
-            grid-template-columns: 1fr;
+        .main-header h1 {
+            font-size: 36px;
+        }
+        
+        .main-header p {
+            font-size: 18px;
         }
     }
     </style>
@@ -606,13 +590,13 @@ table_html = """
         <td>이해하기 쉬움</td>
         <td>데이터에 너무 딱 맞아서 새 데이터에 약함</td>
     </tr>
-    <tr style="background: linear-gradient(90deg, rgba(79, 172, 254, 0.1), transparent);">
+    <tr style="background: linear-gradient(90deg, rgba(79, 172, 254, 0.12), transparent);">
         <td><strong>🏆 Random Forest</strong></td>
         <td><strong>83%</strong></td>
         <td><strong>높은 정확도, 요인 파악 가능</strong></td>
         <td>좀 느림</td>
     </tr>
-    <tr style="background: linear-gradient(90deg, rgba(67, 233, 123, 0.1), transparent);">
+    <tr style="background: linear-gradient(90deg, rgba(67, 233, 123, 0.12), transparent);">
         <td><strong>⭐ XGBoost</strong></td>
         <td><strong>86%</strong></td>
         <td><strong>가장 높은 정확도</strong></td>
@@ -876,36 +860,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 9. 로드맵
-st.markdown("""
-<div class="section">
-    <div class="section-title">9. 이제부터 뭘 할 거야?</div>
-</div>
-""", unsafe_allow_html=True)
-
-roadmap_items = [
-    {"phase": "1단계", "timeline": "1~2개월", "task": "문제 정의 & 데이터 모으기", "color": "#667eea"},
-    {"phase": "2단계", "timeline": "2~3개월", "task": "AI 모델 개발 & 학습", "color": "#f093fb"},
-    {"phase": "3단계", "timeline": "2~3개월", "task": "성능 확인 & 평가", "color": "#4facfe"},
-    {"phase": "4단계", "timeline": "2~3개월", "task": "앱 또는 웹사이트 만들기", "color": "#43e97b"},
-    {"phase": "5단계", "timeline": "6개월+", "task": "실제로 사용해보고 개선하기", "color": "#ffa500"}
-]
-
-roadmap_cols = st.columns(5)
-
-for i, item in enumerate(roadmap_items):
-    with roadmap_cols[i]:
-        st.markdown(f"""
-        <div class="info-card" style="background: linear-gradient(135deg, {item['color']}20 0%, {item['color']}10 100%); border-left: 5px solid {item['color']};">
-            <div style="font-weight: bold; color: {item['color']}; margin-bottom: 8px; font-size: 14px;">{item['phase']}</div>
-            <div style="font-size: 11px; color: #888; margin-bottom: 10px; font-weight: 600;">{item['timeline']}</div>
-            <div style="font-size: 13px; color: #333; line-height: 1.6; font-weight: 500;">{item['task']}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
 st.markdown("""
 <div class="footer">
 🧠 청소년 정신건강 AI 프로젝트 | 2024<br>
-<span style="font-size: 11px;">문제 정의 • 데이터 수집 • 모델 선정 • 기대효과</span>
+<span style="font-size: 12px; margin-top: 15px; display: block;">문제 정의 • 데이터 수집 • 모델 선정 • 기대효과</span>
 </div>
 """, unsafe_allow_html=True)
