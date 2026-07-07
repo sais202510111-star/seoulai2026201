@@ -141,7 +141,39 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 사이드바 네비게이션
+# --- 영어(한글) 병기 컬럼 매핑 (요청하신 컬럼 10개)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 사용자가 주신 컬럼명 (원본)
+ORIGINAL_COLUMNS = [
+    "age",
+    "gender",
+    "daily_social_media_hours",
+    "platform_usage",
+    "sleep_hours",
+    "screen_time_before_sleep",
+    "academic_performance",
+    "physical_activity",
+    "social_interaction_level",
+    "stress_level"
+]
+
+# 영어(한글) 병기 매핑 — 앱 전체에서 기본으로 사용
+RENAME_BILINGUAL = {
+    "age": "Age (연령)",
+    "gender": "Gender (성별)",
+    "daily_social_media_hours": "Daily Social Media Hours (일일 SNS 사용 시간)",
+    "platform_usage": "Primary Platform (주 사용 플랫폼)",
+    "sleep_hours": "Sleep Hours (수면 시간)",
+    "screen_time_before_sleep": "Screen Time Before Sleep (취침 전 화면 사용 시간)",
+    "academic_performance": "Academic Performance (학업 성취도)",
+    "physical_activity": "Physical Activity (신체 활동)",
+    "social_interaction_level": "Social Interaction Level (사회적 교류 수준)",
+    "stress_level": "Stress Level (스트레스 수준)"
+}
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 사이드바 네비게이션 & 데이터 업로드
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 with st.sidebar:
@@ -152,6 +184,77 @@ with st.sidebar:
         "📊 데이터 수집",
         "🤖 모델 선택"
     ], label_visibility="collapsed")
+    st.divider()
+
+    st.markdown("## 🔁 컬럼 라벨: 영어(한글) 병기 적용")
+    st.info("앱 전반에 영어(한글) 병기 라벨을 사용합니다.", icon="ℹ️")
+
+    st.markdown("## 📥 데이터 업로드 (CSV)")
+    uploaded_file = st.file_uploader("CSV 파일 선택 (컬럼명이 원본 영어 키와 일치해야 자동 매핑됩니다)", type=["csv"])
+    st.markdown("• 업로드하지 않으면 예시 데이터로 대체됩니다.")
+    st.divider()
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 데이터 로드 및 컬럼명 변경 함수
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+def load_data(uploaded):
+    try:
+        if uploaded is None:
+            return None
+        # 기본 utf-8 시도, 실패하면 cp949로 재시도 (한글 윈도우 CSV 대응)
+        try:
+            df = pd.read_csv(uploaded)
+        except Exception:
+            uploaded.seek(0)
+            df = pd.read_csv(uploaded, encoding='cp949')
+        return df
+    except Exception as e:
+        st.error(f"데이터 로드 실패: {e}")
+        return None
+
+def apply_bilingual_rename(df: pd.DataFrame):
+    # 원본 컬럼이 mapping에 있으면 변경하고, 없으면 그대로 둡니다.
+    mapping = {k: v for k, v in RENAME_BILINGUAL.items() if k in df.columns}
+    renamed = df.rename(columns=mapping)
+    return renamed, mapping
+
+# Prepare dataframe: uploaded or sample
+df = load_data(uploaded_file)
+
+if df is None:
+    # 예시 데이터 생성 (간단한 더미 행들) — 원본 컬럼명 사용
+    df = pd.DataFrame({
+        "age": [15, 17, 16, 14],
+        "gender": ["F", "M", "F", "M"],
+        "daily_social_media_hours": [3, 5, 2, 4],
+        "platform_usage": ["Instagram", "TikTok", "YouTube", "Instagram"],
+        "sleep_hours": [7, 5.5, 8, 6],
+        "screen_time_before_sleep": [45, 120, 10, 30],
+        "academic_performance": [85, 72, 90, 78],
+        "physical_activity": [3, 1, 4, 2],
+        "social_interaction_level": [6, 3, 8, 5],
+        "stress_level": [7, 9, 4, 6]
+    })
+    st.sidebar.info("샘플 데이터를 사용하고 있습니다. CSV를 업로드하면 대체됩니다.")
+
+renamed_df, applied_map = apply_bilingual_rename(df)
+
+# 미리보기, 컬럼명 변경 결과 안내, 다운로드
+with st.expander("🔎 업로드된 데이터 미리보기 및 컬럼명 변경"):
+    st.write("앱에 적용된 라벨: 영어(한글) 병기")
+    st.write("원본 컬럼 (첫 20개):", list(df.columns)[:20])
+    st.write("적용된 매핑 (원본 -> 변경):")
+    if applied_map:
+        st.table(pd.DataFrame(list(applied_map.items()), columns=["원본 컬럼", "변경 라벨"]))
+    else:
+        st.write("원본 컬럼명이 매핑된 항목이 없습니다. CSV의 컬럼명이 아래 원본 명칭과 일치하는지 확인하세요:")
+        st.write(ORIGINAL_COLUMNS)
+    st.write("변경된 데이터 (상위 10개):")
+    st.dataframe(renamed_df.head(10), use_container_width=True)
+    # 다운로드 (UTF-8)
+    csv_buffer = renamed_df.to_csv(index=False).encode('utf-8')
+    st.download_button("변경된 데이터 다운로드 (CSV UTF-8)", csv_buffer, "renamed_data.csv", "text/csv")
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # PAGE 1: 핵심 요약
@@ -169,20 +272,20 @@ if page == "🎯 핵심 요약":
     # 핵심 수치
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.markdown("""
+        st.markdown(f"""
         <div class="metric-box">
             <div class="metric-label">📊 학생 수</div>
-            <div class="metric-number">1,000</div>
+            <div class="metric-number">{len(renamed_df)}</div>
             <div class="metric-label">명 데이터</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("""
+        st.markdown(f"""
         <div class="metric-box">
-            <div class="metric-label">📋 체크 항목</div>
-            <div class="metric-number">12</div>
-            <div class="metric-label">가지</div>
+            <div class="metric-label">📋 수집 항목</div>
+            <div class="metric-number">{len(RENAME_BILINGUAL)}</div>
+            <div class="metric-label">개</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -231,7 +334,7 @@ if page == "🎯 핵심 요약":
     
     st.markdown("""
     <div class="highlight">
-        <strong style="color: #667eea; font-size: 16px;">💡 핵심:</strong> AI가 SNS, 수면, 스트레스 등 12가지 생활 데이터를 분석해서 우울증 위험 학생을 미리 찾아낸다!
+        <strong style="color: #667eea; font-size: 16px;">💡 핵심:</strong> AI가 SNS, 수면, 스트레스 등 생활 데이터를 분석해서 우울증 위험 학생을 미리 찾아낸다!
     </div>
     """, unsafe_allow_html=True)
     
@@ -343,45 +446,18 @@ elif page == "❓ 문제 정의":
 elif page == "📊 데이터 수집":
     st.markdown('<div class="section-title">📊 어떤 데이터를 수집했나?</div>', unsafe_allow_html=True)
     
-    st.markdown("""
-    **대상:** 1,000명 청소년 (13~18세)
-    
-    **기간:** 2023~2024년
+    st.markdown(f"""
+    **대상:** 1,000명 청소년 (13~18세)  
+    **수집 항목 수:** {len(RENAME_BILINGUAL)}개
     """)
     
     st.divider()
     
-    # 12가지 항목 시각화
-    st.markdown("### 📥 수집한 12가지 항목")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("""
-        **🎮 행동 습관**
-        - SNS 시간
-        - 수면 시간
-        - 운동 시간
-        - 공부 성적
-        """)
-    
-    with col2:
-        st.markdown("""
-        **😟 마음 상태**
-        - 스트레스 (1~10)
-        - 불안감 (1~10)
-        - 휴대폰 중독
-        - 친구 만남 정도
-        """)
-    
-    with col3:
-        st.markdown("""
-        **📱 기타**
-        - 자기 전 핸드폰
-        - 학교 만족도
-        - 가족 관계
-        - 우울증 여부 ✓
-        """)
+    # 수집 항목 나열 (영어(한글) 병기)
+    st.markdown("### 📥 수집 항목 (영어 — 한글)")
+    cols_display = [RENAME_BILINGUAL.get(k, k) for k in ORIGINAL_COLUMNS]
+    for c in cols_display:
+        st.write(f"- {c}")
     
     st.divider()
     
@@ -392,39 +468,32 @@ elif page == "📊 데이터 수집":
     
     with col1:
         st.markdown("""
-        **📥 입력 (Input)**
-        
-        학생의 12가지 생활 데이터
+        **📥 입력 (Input)**  
+        학생의 생활 데이터 (예: SNS 사용시간, 수면, 스트레스 등)
         
         예시:
-        - SNS: 3시간
-        - 수면: 6시간
-        - 스트레스: 8점
-        - ...
+        - Daily Social Media Hours: 3 (hours/day)
+        - Sleep Hours: 6 (hrs/night)
+        - Stress Level: 8 (1-10)
         """)
     
     with col2:
         st.markdown("""
-        **📤 출력 (Output)**
+        **📤 출력 (Output)**  
+        우울증 판정 (예: depression = YES/NO)
         
-        우울증 판정
-        
-        ✓ **YES** → 위험군  
-        (즉시 상담 필요)
-        
-        ✓ **NO** → 정상  
-        (계속 관찰)
+        ✓ **YES** → 위험군 (즉시 상담 필요)  
+        ✓ **NO** → 정상 (계속 관찰)
         """)
     
     st.divider()
     
-    # 데이터 분포
-    st.markdown("### 📈 데이터 특성")
+    # 데이터 분포 (예시 시각화)
+    st.markdown("### 📈 데이터 특성 (예시)")
     
     col1, col2 = st.columns(2)
-    
     with col1:
-        # SNS 시간 분포
+        # SNS 시간 분포 (예시)
         sns_data = pd.DataFrame({
             'SNS 시간': ['0-2시간', '2-4시간', '4-6시간', '6시간+'],
             '학생 수': [150, 300, 400, 150]
@@ -437,7 +506,7 @@ elif page == "📊 데이터 수집":
         st.plotly_chart(fig, use_container_width=True)
     
     with col2:
-        # 우울증 비율
+        # 우울증 비율 (예시)
         depression_data = pd.DataFrame({
             ' ': ['우울증', '정상'],
             '비율': [35, 65]
