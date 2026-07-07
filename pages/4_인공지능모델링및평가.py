@@ -24,7 +24,7 @@ st.markdown("""
 st.title("🤖 4. 인공지능 모델링 및 평가 대시보드")
 st.markdown("<p style='font-size:16px; color:#b2bec3; margin-top:-10px;'>다양한 AI 알고리즘의 파라미터를 실시간으로 제어하며 청소년의 생활 패턴과 스트레스 지수(1~10) 간의 상관관계를 다각도로 분석합니다.</p>", unsafe_allow_html=True)
 
-with st.expander("ℹ️ [필독] 대시보드를 보기 전, AI 머신러닝 용어 가이드북 읽어보기"):
+with st.expander("ℹ️ 대시보드를 보기 전, AI 머신러닝 용어 가이드북 읽어보기"):
     term_col1, term_col2 = st.columns(2)
     with term_col1:
         st.markdown("""
