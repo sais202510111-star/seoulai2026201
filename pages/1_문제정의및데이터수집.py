@@ -141,9 +141,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# --- 원본 컬럼 목록 (사용자 제공) 및 영어(한글) 병기 매핑
+# --- 원본 컬럼 목록 (이미지 기준) 및 영어(한글) 병기 매핑
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+# ORIGINAL_COLUMNS matches the names in your CSV / dataset (image)
 ORIGINAL_COLUMNS = [
     "age",
     "gender",
@@ -154,7 +155,10 @@ ORIGINAL_COLUMNS = [
     "academic_performance",
     "physical_activity",
     "social_interaction_level",
-    "stress_level"
+    "stress_level",
+    "anxiety_level",
+    "suicide_risk_level",
+    "depression_label"
 ]
 
 RENAME_BILINGUAL = {
@@ -167,51 +171,27 @@ RENAME_BILINGUAL = {
     "academic_performance": "Academic Performance (학업 성취도)",
     "physical_activity": "Physical Activity (신체 활동)",
     "social_interaction_level": "Social Interaction Level (사회적 교류 수준)",
-    "stress_level": "Stress Level (스트레스 수준)"
+    "stress_level": "Stress Level (스트레스 수준)",
+    "anxiety_level": "Anxiety Level (불안 수준)",
+    "suicide_risk_level": "Suicide Risk Level (자살 위험 수준)",
+    "depression_label": "Depression Label (우울증 여부)"
 }
 
 # 컬럼별 사용자 설명 (영어 / 한국어)
 COLUMN_DESCRIPTIONS = {
-    "age": {
-        "en": "age of student",
-        "ko": "학생의 나이"
-    },
-    "gender": {
-        "en": "male or female",
-        "ko": "성별 (남/여)"
-    },
-    "daily_social_media_hours": {
-        "en": "hours spent daily",
-        "ko": "일일 SNS 사용 시간 (시간)"
-    },
-    "platform_usage": {
-        "en": "Instagram / TikTok / both",
-        "ko": "주 사용 플랫폼 (Instagram / TikTok / 둘 다)"
-    },
-    "sleep_hours": {
-        "en": "daily sleep time",
-        "ko": "일일 수면 시간 (시간)"
-    },
-    "screen_time_before_sleep": {
-        "en": "phone use before sleep",
-        "ko": "취침 전 휴대폰 사용 시간"
-    },
-    "academic_performance": {
-        "en": "study performance",
-        "ko": "학업 성취도 / 성적"
-    },
-    "physical_activity": {
-        "en": "exercise level",
-        "ko": "운동/신체 활동 수준"
-    },
-    "social_interaction_level": {
-        "en": "real-life interaction",
-        "ko": "오프라인(실제) 교류 수준"
-    },
-    "stress_level": {
-        "en": "stress (1–10)",
-        "ko": "스트레스 수준 (1–10)"
-    }
+    "age": {"en": "age of student", "ko": "학생의 나이"},
+    "gender": {"en": "male or female", "ko": "성별 (남/여)"},
+    "daily_social_media_hours": {"en": "hours spent daily", "ko": "일일 SNS 사용 시간 (시간)"},
+    "platform_usage": {"en": "Instagram / TikTok / both", "ko": "주 사용 플랫폼 (Instagram / TikTok / 둘 다)"},
+    "sleep_hours": {"en": "daily sleep time", "ko": "일일 수면 시간 (시간)"},
+    "screen_time_before_sleep": {"en": "phone use before sleep", "ko": "취침 전 휴대폰 사용 시간"},
+    "academic_performance": {"en": "study performance", "ko": "학업 성취도 / 성적"},
+    "physical_activity": {"en": "exercise level", "ko": "운동/신체 활동 수준"},
+    "social_interaction_level": {"en": "real-life interaction", "ko": "오프라인(실제) 교류 수준"},
+    "stress_level": {"en": "stress (1–10)", "ko": "스트레스 수준 (1–10)"},
+    "anxiety_level": {"en": "anxiety (1–10)", "ko": "불안 수준 (1–10)"},
+    "suicide_risk_level": {"en": "suicide risk (low/med/high or score)", "ko": "자살 위험 수준 (낮음/중간/높음 또는 점수)"},
+    "depression_label": {"en": "depression yes/no (target)", "ko": "우울증 여부 예/아니오 (타깃)"}
 }
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -257,7 +237,7 @@ def apply_bilingual_rename(df: pd.DataFrame):
     renamed = df.rename(columns=mapping)
     return renamed, mapping
 
-# 예시 데이터 (원본 컬럼명 사용)
+# 예시 데이터 (원본 컬럼명 사용) — 샘플에 신규 컬럼 포함
 df = load_data(uploaded_file)
 if df is None:
     df = pd.DataFrame({
@@ -270,7 +250,10 @@ if df is None:
         "academic_performance": [85, 72, 90, 78],
         "physical_activity": [3, 1, 4, 2],
         "social_interaction_level": [6, 3, 8, 5],
-        "stress_level": [7, 9, 4, 6]
+        "stress_level": [7, 9, 4, 6],
+        "anxiety_level": [5, 8, 3, 6],
+        "suicide_risk_level": ["low", "medium", "low", "low"],
+        "depression_label": ["NO", "YES", "NO", "NO"]
     })
     st.sidebar.info("샘플 데이터를 사용하고 있습니다. CSV를 업로드하면 대체됩니다.")
 
